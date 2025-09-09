@@ -9,67 +9,74 @@
 </head>
 
 <body>
-    <div class="container">
-        <h1>Google Drive Link Converter</h1>
-        <p>Convert Google Drive share links to direct download links</p>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Google Drive Link Converter</h1>
+            <p>Convert Google Drive share links to direct download links</p>
+        </header>
 
-        <div class="converter-box">
-            <div class="mode-toggle">
-                <label class="toggle-label">
-                    <input type="radio" name="mode" value="single" checked onchange="toggleMode()">
-                    Single Link
-                </label>
-                <label class="toggle-label">
-                    <input type="radio" name="mode" value="batch" onchange="toggleMode()">
-                    Batch Conversion
-                </label>
+        <div class="main-layout">
+            <div class="input-section">
+                <div class="mode-toggle">
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="modeSwitch" onchange="toggleMode()">
+                        <label for="modeSwitch" class="switch-label">
+                            <span class="switch-slider"></span>
+                            <span class="switch-text-left">Single</span>
+                            <span class="switch-text-right">Batch</span>
+                        </label>
+                    </div>
+                </div>
+
+                <textarea id="inputLink" placeholder="Paste your Google Drive share link here..." rows="2"></textarea>
+
+                <div class="button-group">
+                    <button id="convertBtn" onclick="convertLink()">Convert</button>
+                    <button id="resetBtn" onclick="resetForm()">Reset</button>
+                </div>
+
+                <div id="error" class="error-box" style="display: none;"></div>
             </div>
 
-            <textarea id="inputLink" placeholder="Paste your Google Drive share link here..." rows="3"></textarea>
+            <div class="output-section">
+                <div id="result" class="result-box" style="display: none;">
+                    <label>Direct Link:</label>
+                    <textarea id="outputLink" readonly rows="2"></textarea>
+                    <button id="copyBtn" onclick="copyToClipboard()">Copy Link</button>
+                </div>
 
-            <div class="button-group">
-                <button id="convertBtn" onclick="convertLink()">Convert</button>
-                <button id="resetBtn" onclick="resetForm()">Reset</button>
-            </div>
-
-            <div id="result" class="result-box" style="display: none;">
-                <label>Direct Link:</label>
-                <textarea id="outputLink" readonly rows="3"></textarea>
-                <button id="copyBtn" onclick="copyToClipboard()">Copy Link</button>
-            </div>
-
-            <div id="batchResult" class="result-box" style="display: none;">
-                <label>Converted Links:</label>
-                <div id="batchStats" class="batch-stats"></div>
-                <textarea id="batchOutputLink" readonly rows="8"></textarea>
-                <div class="batch-buttons">
-                    <button id="copyAllBtn" onclick="copyAllToClipboard()">Copy All</button>
-                    <button id="downloadBtn" onclick="downloadResults()">Download as TXT</button>
+                <div id="batchResult" class="result-box" style="display: none;">
+                    <label>Converted Links:</label>
+                    <div id="batchStats" class="batch-stats"></div>
+                    <textarea id="batchOutputLink" readonly rows="3"></textarea>
+                    <div class="batch-buttons">
+                        <button id="copyAllBtn" onclick="copyAllToClipboard()">Copy All</button>
+                        <button id="downloadBtn" onclick="downloadResults()">Download as TXT</button>
+                    </div>
                 </div>
             </div>
 
-            <div id="error" class="error-box" style="display: none;"></div>
+            <div class="info-section">
+                <h3>How to use:</h3>
+                <div id="singleInstructions">
+                    <ol>
+                        <li>Get a shareable link from Google Drive</li>
+                        <li>Paste the link in the input box</li>
+                        <li>Click "Convert" to get the direct link</li>
+                        <li>Use the converted link in your websites</li>
+                    </ol>
+                </div>
+                <div id="batchInstructions" style="display: none;">
+                    <ol>
+                        <li>Switch to "Batch Conversion" mode</li>
+                        <li>Paste multiple links (one per line)</li>
+                        <li>Press Enter for new lines, Ctrl+Enter to convert</li>
+                        <li>Copy all results or download as TXT</li>
+                    </ol>
+                </div>
+            </div>
         </div>
 
-        <div class="info-box">
-            <h3>How to use:</h3>
-            <div id="singleInstructions">
-                <ol>
-                    <li>Get a shareable link from Google Drive (right-click → Share → Copy link)</li>
-                    <li>Paste the link in the input box above</li>
-                    <li>Click "Convert" to get the direct download link</li>
-                    <li>Use the converted link in your websites or applications</li>
-                </ol>
-            </div>
-            <div id="batchInstructions" style="display: none;">
-                <ol>
-                    <li>Switch to "Batch Conversion" mode</li>
-                    <li>Paste multiple Google Drive links (one per line)</li>
-                    <li>Click "Convert" to process all links at once</li>
-                    <li>Copy all results or download as a text file</li>
-                </ol>
-            </div>
-        </div>
     </div>
 
     <footer class="copyright">

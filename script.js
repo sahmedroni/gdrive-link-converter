@@ -1,7 +1,7 @@
 function convertLink() {
-    const mode = document.querySelector('input[name="mode"]:checked').value;
-    
-    if (mode === 'batch') {
+    const modeSwitch = document.getElementById('modeSwitch');
+
+    if (modeSwitch.checked) {
         convertBatchLinks();
     } else {
         convertSingleLink();
@@ -14,23 +14,24 @@ function convertSingleLink() {
     const batchResultDiv = document.getElementById('batchResult');
     const errorDiv = document.getElementById('error');
     const outputLink = document.getElementById('outputLink');
-    
+
     // Hide previous results
     resultDiv.style.display = 'none';
     batchResultDiv.style.display = 'none';
     errorDiv.style.display = 'none';
-    
+
     if (!inputLink) {
         showError('Please paste a Google Drive link');
         return;
     }
-    
+
     try {
         const convertedLink = convertGoogleDriveLink(inputLink);
-        
+
         if (convertedLink) {
             outputLink.value = convertedLink;
             resultDiv.style.display = 'block';
+
         } else {
             showError('Invalid Google Drive link. Please make sure you\'re using a valid Google Drive share link.');
         }
@@ -46,28 +47,28 @@ function convertBatchLinks() {
     const errorDiv = document.getElementById('error');
     const batchOutputLink = document.getElementById('batchOutputLink');
     const batchStats = document.getElementById('batchStats');
-    
+
     // Hide previous results
     resultDiv.style.display = 'none';
     batchResultDiv.style.display = 'none';
     errorDiv.style.display = 'none';
-    
+
     if (!inputText) {
         showError('Please paste Google Drive links (one per line)');
         return;
     }
-    
+
     const lines = inputText.split('\n').map(line => line.trim()).filter(line => line);
-    
+
     if (lines.length === 0) {
         showError('No valid links found');
         return;
     }
-    
+
     const results = [];
     let successCount = 0;
     let failCount = 0;
-    
+
     lines.forEach((line, index) => {
         if (line.includes('drive.google.com')) {
             const convertedLink = convertGoogleDriveLink(line);
@@ -83,38 +84,40 @@ function convertBatchLinks() {
             failCount++;
         }
     });
-    
+
     batchOutputLink.value = results.join('\n');
     batchStats.innerHTML = `
         <strong>Conversion Results:</strong> 
         ${successCount} successful, ${failCount} failed out of ${lines.length} total links
     `;
     batchResultDiv.style.display = 'block';
+
+
 }
 
 function convertGoogleDriveLink(url) {
     // Remove any whitespace
     url = url.trim();
-    
+
     // Pattern 1: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
     let match = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
     if (match) {
         const fileId = match[1];
         return `https://drive.google.com/uc?export=download&id=${fileId}`;
     }
-    
+
     // Pattern 2: https://drive.google.com/open?id=FILE_ID
     match = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
     if (match) {
         const fileId = match[1];
         return `https://drive.google.com/uc?export=download&id=${fileId}`;
     }
-    
+
     // Pattern 3: Already a direct link
     if (url.includes('drive.google.com/uc?') && url.includes('export=download')) {
         return url;
     }
-    
+
     return null;
 }
 
@@ -127,71 +130,87 @@ function showError(message) {
 function copyToClipboard() {
     const outputLink = document.getElementById('outputLink');
     const copyBtn = document.getElementById('copyBtn');
-    
+
     outputLink.select();
     outputLink.setSelectionRange(0, 99999); // For mobile devices
-    
+
     try {
         document.execCommand('copy');
-        
+
         // Visual feedback
         const originalText = copyBtn.textContent;
         copyBtn.textContent = 'Copied!';
         copyBtn.style.background = '#2d8f47';
-        
+
         setTimeout(() => {
             copyBtn.textContent = originalText;
             copyBtn.style.background = '#34a853';
         }, 2000);
-        
+
     } catch (err) {
         console.error('Failed to copy: ', err);
         showError('Failed to copy to clipboard. Please copy manually.');
     }
 }
 
-// Allow Enter key to trigger conversion
-document.getElementById('inputLink').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        convertLink();
+// Allow Enter key to trigger conversion in single mode, line breaks in batch mode
+document.getElementById('inputLink').addEventListener('keypress', function (e) {
+    const modeSwitch = document.getElementById('modeSwitch');
+    
+    if (e.key === 'Enter') {
+        if (modeSwitch.checked) {
+            // Batch mode: Allow Enter for line breaks, Ctrl+Enter for conversion
+            if (e.ctrlKey) {
+                e.preventDefault();
+                convertLink();
+            }
+            // Otherwise, allow default Enter behavior (line break)
+        } else {
+            // Single mode: Enter triggers conversion (unless Shift is held)
+            if (!e.shiftKey) {
+                e.preventDefault();
+                convertLink();
+            }
+        }
     }
 });
 
 function toggleMode() {
-    const mode = document.querySelector('input[name="mode"]:checked').value;
+    const modeSwitch = document.getElementById('modeSwitch');
     const inputLink = document.getElementById('inputLink');
     const singleInstructions = document.getElementById('singleInstructions');
     const batchInstructions = document.getElementById('batchInstructions');
-    
-    if (mode === 'batch') {
+
+    if (modeSwitch.checked) {
+        // Batch mode
         inputLink.placeholder = 'Paste multiple Google Drive links here (one per line)...';
-        inputLink.rows = 6;
+        inputLink.rows = 3;
         singleInstructions.style.display = 'none';
         batchInstructions.style.display = 'block';
     } else {
+        // Single mode
         inputLink.placeholder = 'Paste your Google Drive share link here...';
-        inputLink.rows = 3;
+        inputLink.rows = 2;
         singleInstructions.style.display = 'block';
         batchInstructions.style.display = 'none';
     }
-    
+
     resetForm();
 }
 
 function resetForm() {
     // Clear input
     document.getElementById('inputLink').value = '';
-    
+
     // Hide result and error boxes
     document.getElementById('result').style.display = 'none';
     document.getElementById('batchResult').style.display = 'none';
     document.getElementById('error').style.display = 'none';
-    
+
     // Clear outputs
     document.getElementById('outputLink').value = '';
     document.getElementById('batchOutputLink').value = '';
-    
+
     // Focus back to input
     document.getElementById('inputLink').focus();
 }
@@ -199,23 +218,23 @@ function resetForm() {
 function copyAllToClipboard() {
     const batchOutputLink = document.getElementById('batchOutputLink');
     const copyAllBtn = document.getElementById('copyAllBtn');
-    
+
     batchOutputLink.select();
     batchOutputLink.setSelectionRange(0, 99999);
-    
+
     try {
         document.execCommand('copy');
-        
+
         // Visual feedback
         const originalText = copyAllBtn.textContent;
         copyAllBtn.textContent = 'Copied!';
         copyAllBtn.style.background = '#2d8f47';
-        
+
         setTimeout(() => {
             copyAllBtn.textContent = originalText;
             copyAllBtn.style.background = '#34a853';
         }, 2000);
-        
+
     } catch (err) {
         console.error('Failed to copy: ', err);
         showError('Failed to copy to clipboard. Please copy manually.');
@@ -225,12 +244,12 @@ function copyAllToClipboard() {
 function downloadResults() {
     const batchOutputLink = document.getElementById('batchOutputLink');
     const content = batchOutputLink.value;
-    
+
     if (!content) {
         showError('No results to download');
         return;
     }
-    
+
     const blob = new Blob([content], { type: 'text/plain' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -243,7 +262,7 @@ function downloadResults() {
 }
 
 // Auto-convert when user pastes a link
-document.getElementById('inputLink').addEventListener('paste', function() {
+document.getElementById('inputLink').addEventListener('paste', function () {
     setTimeout(() => {
         const inputLink = this.value.trim();
         if (inputLink && inputLink.includes('drive.google.com')) {
@@ -251,3 +270,4 @@ document.getElementById('inputLink').addEventListener('paste', function() {
         }
     }, 100);
 });
+
